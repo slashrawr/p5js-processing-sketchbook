@@ -1,7 +1,7 @@
 let points = []
 let fps = 30;
 let max_z = 300;
-let max_points = 200;
+let max_points = 300;
 let max_lines = 1;
 let min_speed = 0.01;
 let max_speed = 0.1;
@@ -62,7 +62,7 @@ function draw() {
     
     push();
     translate(p.position);
-    sphere(2);
+    sphere(1);
     pop();
   }
   
@@ -85,6 +85,7 @@ function createPoint() {
   p.direction = createVector(random(TWO_PI), random(TWO_PI), random(TWO_PI));
   p.line = random([true,false,false,false,false,false,false,false]);
   p.pair = {}
+  
   return p;
 }
 
