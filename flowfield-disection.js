@@ -1,5 +1,5 @@
 let showBlocks = false;
-let showGrid = false;
+let showGrid = true;
 let showFlowDirection = true;
 
 let isize = 20;
@@ -7,9 +7,10 @@ let isize = 20;
 let _scale = 40;
 let _rows = 0;
 let _cols = 0;
+let _maxspeed = 10;
 let flowfield = [];
-
-let p ={};
+let _particlecount = 500;
+let particles = [];
 
 function setup() {
   createCanvas(600, 600);
@@ -21,18 +22,20 @@ function setup() {
   noiseDetail(10,0.5);
   
   createFlowField();
-  p = new p5.Vector(width/2, height/2);
+  for (let i = 0; i < _particlecount; i++) {
+    createParticle();
+  }
   
-  noLoop();
+  //noLoop();
 }
 
 function draw() {
-  //background(220);
+  background(0);
   let counter = 0;
-  
+   for (let y = 0; y <= rows; y++) {
   for (let x = 0; x <= cols; x++) {
-    for (let y = 0; y <= rows; y++) {
-      let direction = flowfield[counter].heading()/TWO_PI;
+   
+      let direction = flowfield[x + y * _scale].heading();
       
       //console.debug(direction);
       
@@ -41,9 +44,8 @@ function draw() {
       let scaledx1 = (x+1)*_scale;
       let scaledy1 = (y+1)*_scale;
 
-      fill(direction*255);
-      
       if (showBlocks) {
+        fill(255/direction);
         rect(scaledx, scaledy,scaledx1,scaledy1);
       }
       
@@ -55,28 +57,73 @@ function draw() {
         
       if (showFlowDirection) {
         push();
-        stroke(255,0,0);
-        let x2 = sin(TWO_PI*direction)* isize + scaledx;
-        let y2 = cos(TWO_PI*direction)* isize + scaledy;
+        strokeWeight(2);
+        stroke(255*flowfield[x + y * _scale].mag(),0,0);
+        let x2 = cos(direction)* isize + scaledx;
+        let y2 = sin(direction)* isize + scaledy;
         line(scaledx,scaledy,x2,y2);
         pop();
       } 
-      
-      counter++;
     }
   }
+  
+  //if (keyIsPressed === true) {
+  
+  push()
+  stroke(255);
+  strokeWeight(5);
+
+  particles.forEach(particle => {
+    let x = floor(particle.position.x / _scale);
+    let y = floor(particle.position.y / _scale);
+
+    flow = flowfield[x + y * _scale];
+    //console.debug("x: " + x + " - y:" + y + " - flow:" + flow);
+    particle.acceleration.add(flow);
+    //console.debug("acc: " + particle.acceleration + " - vel: " + particle.velocity);
+    particle.velocity.add(particle.acceleration);
+    particle.velocity.limit(_maxspeed);
+    particle.position.add(particle.velocity);
+    particle.acceleration.mult(0);
+    edgeCheck(particle);
+    point(particle.position.x, particle.position.y);
+  })
+  
+  pop();
+ // }
 }
 
 function createFlowField() {
   let counter = 0;
-  
+  for (let y = 0; y <= rows; y++) {
   for (let x = 0; x <= cols; x++) {
-    for (let y = 0; y <= rows; y++) {
+    
       let dir = noise(x/(_scale/2),y/(_scale/2));
-      flowfield[counter] = p5.Vector.fromAngle(TWO_PI*dir);
-      console.debug(flowfield[counter]);
-      counter++;
-      
+      let vec = p5.Vector.fromAngle(TWO_PI*dir, random(0.1,1));
+      flowfield[x + y * _scale] = vec;
+      //console.debug(flowfield[x+y*_scale].heading());     
     }
   }
+}
+
+function createParticle() {
+  let particle = {};
+  particle.position = new p5.Vector(random(width), random(height));
+  particle.velocity = new p5.Vector(0,0);
+  particle.acceleration = new p5.Vector(0,0);
+  
+  particles.push(particle);
+}
+
+function edgeCheck(particle) {  
+  if (particle.position.x < 0)
+    particle.position.x = width;
+  else if (particle.position.x > width)
+    particle.position.x = 0;
+  
+  if (particle.position.y < 0)
+    particle.position.y = height;
+  else if (particle.position.y > height)
+    particle.position.y = 0;
+  
 }
