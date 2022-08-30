@@ -1,17 +1,37 @@
+/*
+Interesting seeds:
+1337
+8934
+55623
+5543
+6055423
+1647441393
+
+*/
+
+/*
+TODO:
+
+-Fix border force vectors to avoid being in opposition
+*/
+
 let showBlocks = false;
 let showGrid = false;
 let showFlowDirection = false;
 
-let seed = 134536;
-let animationlength = 5;
+let seed = 1337;
+let _loop = false;
+let animationlength = 10;
+let monochrome = false;
+let randomdetail = false;
 
 let isize = 20;
 let _scale = 40;
 let _rows = 0;
 let _cols = 0;
-let _maxspeed = 4;
+let _maxspeed = 3;
 let _flowfield = [];
-let _particlecount = 500;
+let _particlecount = 1500;
 let particles = [];
 let palettes = [];
 let palette = {};
@@ -26,25 +46,25 @@ function setup() {
   noiseSeed(seed);
   colorMode(RGB);
   angleMode(RADIANS);
-  strokeCap(ROUND);
+  strokeCap(PROJECT);
   palette = palettes[int(random(0,199))];
   rows = floor(height / _scale)
   cols = floor(width / _scale);
   frameRate(30);
-  noiseDetail(4,0.5);
+  if (randomdetail)
+    noiseDetail(random(2,6),random(0.2,0.5));
+  else
+    noiseDetail(5,0.8);
   
   createFlowField();
   for (let i = 0; i < _particlecount; i++) {
     createParticle();
   }
   
-  //noLoop();
+  background(0);
 }
 
 function draw() {
-  //background(0);
-  //let counter = 0;
-   
   for (let x = 0; x <= cols; x++) {
    for (let y = 0; y <= rows; y++) {
       let direction = _flowfield[x + y * _scale].heading();
@@ -80,8 +100,7 @@ function draw() {
   }
   
   push()
-  stroke(255, 80);
-  strokeWeight(2);
+  strokeWeight(_maxspeed);
 
   particles.forEach(particle => {
     let x = floor(particle.position.x / _scale);
@@ -95,14 +114,17 @@ function draw() {
     particle.position.add(particle.velocity);
     particle.acceleration.mult(0);
     edgeCheck(particle);
-    stroke(particle.colour);
+    if (monochrome)
+      stroke(255, 10);
+    else
+      stroke(particle.colour);
     point(particle.position.x, particle.position.y);
     line(particle.previousposition.x, particle.previousposition.y, particle.position.x, particle.position.y);
   })
   
   pop();
   
-  if (frameCount >= 30*animationlength)
+  if (frameCount >= 30*animationlength && _loop == false)
     noLoop();
 }
 
@@ -112,7 +134,7 @@ function createFlowField() {
   for (let x = 0; x <= cols; x++) {
     for (let y = 0; y <= rows; y++) {
       let dir = noise(x/(_scale/2),y/(_scale/2));
-      let vec = p5.Vector.fromAngle(TWO_PI*dir, random(0.1,1));
+      let vec = p5.Vector.fromAngle(TWO_PI*dir*2, random(0.1,1));
       _flowfield[x + y * _scale] = vec;  
     }
   }
@@ -124,7 +146,7 @@ function createParticle() {
   particle.velocity = new p5.Vector(0,0);
   particle.acceleration = new p5.Vector(0,0);
   particle.previousposition = particle.position.copy();
-  particle.colour = hexToRGB(random(palette), random(50,120));
+  particle.colour = hexToRGB(random(palette), random(1,5));
   
   particles.push(particle);
 }
