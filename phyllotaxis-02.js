@@ -15,14 +15,14 @@ function setup() {
 
 function draw() {
   background(0);
-  strokeWeight(2);
  
   for (let i = 0; i < max_iterations; i++) {
     let a = m * i;
-    let rad = c*sqrt(i);
-    let x = cos(a) * rad;
-    let y = sin(a) * rad;
-    stroke(a*0.3/255,a/255,a*0.75/255);
+    let tmp = c*sqrt(i)+i*1;
+    let x = cos(a) * tmp;
+    let y = sin(a) * tmp;
+    strokeWeight(i);
+    stroke(a*0.5/255,a/255,a*0.35/255);
     point(x+xoff,y+yoff);
   }
 }
